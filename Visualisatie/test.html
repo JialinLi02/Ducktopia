@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Custom Image Map with Grid and Data</title>
+
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script src="https://d3js.org/d3.v6.min.js"></script> <!-- Load d3 for CSV parsing -->
+
+	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+		}
+		#map {
+			width: 100%;
+			height: 500px;
+		}
+		#buttons {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			z-index: 1000;
+			background-color: white;
+			padding: 10px;
+		}
+	</style>
+</head>
+<body>
+
+<div id="buttons">
+	<button onclick="loadCSV('grid_data_1.csv')">Heatmap 1</button>
+	<button onclick="loadCSV('grid_data_2.csv')">Heatmap 2</button>
+	<button onclick="loadCSV('grid_data_3.csv')">Heatmap 3</button>
+</div>
+
+<div id="map"></div>
+
+<script>
+// Initialize the map
+var map = L.map('map').setView([37.8, -96], 10);  // Set a higher zoom level to start zoomed in
+
+// Your image URL
+var imageUrl = '../Ducktopia.png';  // Replace with your image URL
+
+// Image dimensions (in pixels)
+var imageWidth = 1000;  // Replace with your image's width in pixels
+var imageHeight = 500;  // Replace with your image's height in pixels
+
+// Map bounds that you want the image to cover (set this based on the map's geographic coordinates)
+var mapBounds = [[37.7, -97], [37.9, -95]]; // Adjust the bounds as needed
+
+// Calculate aspect ratio
+var aspectRatio = imageWidth / imageHeight;
+
+// Set image bounds based on aspect ratio
+var imageBounds = [
+    [mapBounds[0][0], mapBounds[0][1]], 
+    [mapBounds[0][0] + (mapBounds[1][0] - mapBounds[0][0]), mapBounds[0][1] + (mapBounds[1][0] - mapBounds[0][0]) * aspectRatio]
+];
+
+// Overlay the image on the map
+L.imageOverlay(imageUrl, imageBounds).addTo(map);
+
+// Set up the grid (50 x 25 tiles)
+var gridWidth = 50;
+var gridHeight = 25;
+
+// Find the largest difference between latitude and longitude
+var latDiff = imageBounds[1][0] - imageBounds[0][0];
+var lonDiff = imageBounds[1][1] - imageBounds[0][1];
+
+// Find the grid step to ensure square tiles
+var gridStep = Math.min(latDiff / gridHeight, lonDiff / gridWidth); // Ensure the tiles are square
+
+// Function to load CSV data and display the grid
+function loadCSV(csvFile) {
+    // Remove existing grid layers
+    if (window.gridLayer) {
+        map.removeLayer(window.gridLayer);
+    }
+
+    // Load the CSV data
+    d3.csv(csvFile).then(function(data) {
+        // Convert CSV data into a usable format
+        var tileData = {};
+        data.forEach(function(d) {
+            var loc = d.Location;
+            var value = parseFloat(d.Value);
+            
+            // Convert location like "A1" to x, y coordinates
+            var x = parseInt(loc.slice(1)) - 1;  // Horizontal axis (1-50)
+            var y = loc.charCodeAt(0) - 'A'.charCodeAt(0);  // Vertical axis (A-Y)
+            
+            tileData[loc] = {
+                x: x,
+                y: y,
+                value: value
+            };
+        });
+
+        // Create a grid of rectangles (tiles) over the image
+        var grid = [];
+        for (var i = 0; i < gridWidth; i++) {
+            for (var j = 0; j < gridHeight; j++) {
+                var tileId = String.fromCharCode(65 + j) + (i + 1);  // Location like "A1", "B2", ...
+                var topLeft = [
+                    imageBounds[0][0] + gridStep * j, 
+                    imageBounds[0][1] + gridStep * i
+                ];
+                var bottomRight = [
+                    imageBounds[0][0] + gridStep * (j + 1), 
+                    imageBounds[0][1] + gridStep * (i + 1)
+                ];
+
+                // Get the value for this tile from the data
+                var value = tileData[tileId] ? tileData[tileId].value : 0;  // Default to 0 if no data
+
+                // Get the color for the tile based on its value
+                var color = getColor(value);
+
+                // Add a rectangle for each tile with the appropriate color
+                grid.push(
+                    L.rectangle([topLeft, bottomRight], {
+                        color: '',  // Tile border color
+                        weight: 1,
+                        fillColor: color,
+                        fillOpacity: 0.3
+                    })
+                );
+            }
+        }
+
+        // Add the grid layer to the map
+        window.gridLayer = L.layerGroup(grid).addTo(map);
+    });
+}
+
+// Function to get color based on value
+function getColor(value) {
+    return value > 75 ? '#800026' :
+           value > 50 ? '#BD0026' :
+           value > 25 ? '#E31A1C' :
+           value > 10 ? '#FC4E2A' :
+           value > 5  ? '#FD8D3C' :
+           value > 1  ? '#FEB24C' :
+           '#FFEDA0'; // Default color for low values
+}
+
+// Load the default CSV on initial load
+loadCSV('grid_data_1.csv');
+</script>
+
+</body>
+</html>
