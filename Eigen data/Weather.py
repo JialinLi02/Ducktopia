@@ -88,7 +88,7 @@ def generate_weather(koppen, day_of_year):
 
     # Vulkanische activiteit
     uitbarsting_gemeten = random.choices([0, 1], weights=(80, 20))[0]
-    giftigheid_vrijgekomen_stoffen = uitbarsting_gemeten * 100 - wind_speed
+    giftigheid_vrijgekomen_stoffen = (uitbarsting_gemeten * (25-wind_speed))/25
 
 
 
