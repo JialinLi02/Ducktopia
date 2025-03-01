@@ -142,3 +142,9 @@ grouped_data[["Location", "Giftigheid vrijgekomen stoffen"]].to_csv(output_file,
 
 output_file = r"C:/Users/herli/Downloads/AE/Ducktopia/Final_scores/clouds.csv"
 grouped_data[["Location", "CloudCoverage_percent"]].to_csv(output_file, index=False)
+
+
+new_data_pres = pd.read_csv("C:/Users/herli/Downloads/AE/Ducktopia/Eigen data/Quentin_dataset.csv")
+new_data_pres = new_data_pres[["AirTemperatureCelsius", "AirPressure_hPa", "WindSpeed_kmh", "CloudCoverage_percent", "UV index", "LocationKoppenGeigerClassification", "Precipitation_mm"]]
+output_file = r"C:/Users/herli/Downloads/AE/Ducktopia/Eigen data/presentation.csv"
+new_data_pres.to_csv(output_file, index=False)
