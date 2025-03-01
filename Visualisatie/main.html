@@ -37,9 +37,9 @@
         }
     
         /* Button container style */
-        #buttons {
+        #buttons_l {
             position: absolute;
-            top: 20px;
+            top: 50px;
             left: 20px;
             z-index: 1000;
             background-color: rgba(255, 255, 255, 0.8);
@@ -50,10 +50,35 @@
             flex-direction: column;
             gap: 10px;
         }
+        #buttons_r {
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #buttons_bottom {
+            position: absolute;
+            bottom: 50px;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+        }
     
         /* Button style */
-        #buttons button {
-            background-color: #4CAF50;
+        .buttons button {
+            background-color: #b29e39;
             color: white;
             padding: 12px 20px;
             border: none;
@@ -62,16 +87,24 @@
             font-size: 16px;
             transition: all 0.3s ease;
         }
+
+        #lege_kaart {
+            background-color: #767b6f;
+        }
+
+        #leefbaarheid {
+            background-color: #577b24;
+        }
     
         /* Button hover effect */
-        #buttons button:hover {
-            background-color: #45a049;
+        .buttons button:hover {
+            background-color: #ccc46b;
             transform: translateY(-2px);
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
         }
     
         /* Button focus effect */
-        #buttons button:focus {
+        .buttons button:focus {
             outline: none;
             box-shadow: 0 0 5px 2px rgba(0, 123, 255, 0.5);
         }
@@ -107,12 +140,29 @@
         <div id="map"></div>
     </div>
 
-    <div id="buttons">
-        <button onclick="loadCSV('')">Kaart</button>
-        <button onclick="loadCSV('../Eigen data/correct_weather_scores.csv')">Gunstig weer</button>
-        <button onclick="loadCSV('../Eigen data/food_scores.csv')">Food scores</button>
-        <button onclick="loadCSV('grid_data_3.csv')">Heatmap 3</button>
+    <div class="buttons" id="buttons_l">
+        <button onclick="loadCSV('../Final_scores/clouds.csv')">Bewolking</button>
+        <button onclick="loadCSV('../Final_scores/Eenden_scores.csv')">Afwezigheid van gevaarlijke eenden</button>
+        <button onclick="loadCSV('../Final_scores/final_precipitation_scores.csv')">Neerslag score</button>
+        <button onclick="loadCSV('../Final_scores/final_temperature_scores.csv')">Temperatuur score</button>
+        <button onclick="loadCSV('../Final_scores/final_uv_index_scores.csv')">UV-index score</button>
+        <button onclick="loadCSV('../Final_scores/final_weather_scores.csv')">Weer score</button>
     </div>
+    
+    <div class="buttons" id="buttons_r">
+        <button onclick="loadCSV('../Final_scores/food_scores.csv')">Voedsel beschikbaarheid</button>
+        <button onclick="loadCSV('../Final_scores/gespotte_eendjes.csv')">Aantal gevaarlijke eendjes</button>
+        <button onclick="loadCSV('../Final_scores/giftig_gas.csv')">Giftigheid van lucht</button>
+        <button onclick="loadCSV('../Final_scores/Seismische_scores.csv')">Seismische score</button>
+        <button onclick="loadCSV('../Final_scores/uitbarsting_scores.csv')">Vulkaanuitbarsting scores</button>
+        <button onclick="loadCSV('../Final_scores/wind_scores.csv')">Windsnelheid (km/h)</button>
+    </div>
+    
+    <div class="buttons" id="buttons_bottom">
+        <button id="lege_kaart" onclick="loadCSV('')">Kaart</button>
+        <button id="leefbaarheid" onclick="loadCSV('../Final_scores/weighted_average_scores.csv')">Leefbaarheidsindex</button>
+    </div>
+    
 
     <div id="hover-info"></div>
 
@@ -166,9 +216,17 @@ function loadCSV(csvFile) {
         var tileData = {};
         var columnName = Object.keys(data[0]).find(key => key !== "Location"); // Automatically detect data column
 
+        // Calculate min and max values for the column
+        var minValue = Infinity;
+        var maxValue = -Infinity;
+        
         data.forEach(function(d) {
             var loc = d.Location;
             var value = parseFloat(d[columnName]);
+
+            // Update min and max values
+            if (value < minValue) minValue = value;
+            if (value > maxValue) maxValue = value;
 
             // Convert location like "A1" to x, y coordinates
             var x = parseInt(loc.slice(1)) - 1;  // Horizontal index (1-50)
@@ -192,7 +250,7 @@ function loadCSV(csvFile) {
                 ];
 
                 let value = tileData[tileId] ? tileData[tileId].value : null;
-                let color = value !== null ? getColor(value) : "#cccccc"; // Default color if no value
+                let color = value !== null ? getColor(value, minValue, maxValue) : "#cccccc"; // Default color if no value
 
                 let rect = L.rectangle([topLeft, bottomRight], {
                     color: '',  // Initially no border
@@ -245,6 +303,7 @@ function loadCSV(csvFile) {
     });
 }
 
+
 // Function to darken the color (used on hover)
 function darkenColor(color) {
     var hex = color.substring(1); // Remove the "#" from the color string
@@ -265,18 +324,28 @@ function darkenColor(color) {
 
 
 // Function to get color based on value (green-red gradient)
-function getColor(value) {
-    return value > 9.5 ? '#B8E6AE' :  // Dark Green
-           value > 9.0 ? '#BAD98F' :  // Green
-           value > 8.5 ? '#C9D98F' :  // Lime Green
-           value > 8.0 ? '#D7D98F' :  // Gold
-           value > 7.0 ? '#D9C98F' :  // Orange
-           value > 5.0 ? '#D9B88F' :  // Orange-Red
-           '#d9a28f';  // Dark Red (Lowest scores)
+function getColor(value, minValue = 0, maxValue = 10) {
+    // Ensure value is within the defined range
+    value = Math.max(minValue, Math.min(value, maxValue));
+    
+    // Normalize the value to a scale between 0 and 1
+    var normalizedValue = (value - minValue) / (maxValue - minValue);
+
+    // Define the color gradient based on normalized value (0-1 scale)
+    if (normalizedValue >= 0.9) return '#adeba7';  // Green (highest value)
+    if (normalizedValue >= 0.8) return '#c1eba7';  // Lighter Green
+    if (normalizedValue >= 0.7) return '#cfeba7';  // Lighter Yellow-Green
+    if (normalizedValue >= 0.6) return '#ddeba7';  // Yellow-Green
+    if (normalizedValue >= 0.5) return '#e7eba7';  // Light Yellow
+    if (normalizedValue >= 0.4) return '#ebdfa7';  // Light Gold
+    if (normalizedValue >= 0.3) return '#ebd6a7';  // Gold
+    if (normalizedValue >= 0.2) return '#ebcba7';  // Orange-Yellow
+    if (normalizedValue >= 0.1) return '#ebbaa7';  // Light Orange
+    return '#d9a28f';  // Red (lowest value)
 }
 
 // Load the default CSV on initial load
-loadCSV('../Eigen data/correct_weather_scores.csv');
+loadCSV('');
 </script>
 
 </body>
