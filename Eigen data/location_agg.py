@@ -1,7 +1,7 @@
 
 import pandas as pd
 
-data = pd.read_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Eigen data/dataset.csv")
+data = pd.read_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Eigen data/Quentin_dataset.csv")
 print(data)
 
 import pandas as pd
