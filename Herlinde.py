@@ -15,9 +15,9 @@ Output:     kans op eenden op schaal van 1 (lage kans) tot 3 (hoge kans)
 """
 def bepaal_kans_op_eenden(food_value, giftige_lucht, seismic_score, regen):
     for location in data.location:
-        if food_value > :
+        if food_value > 8:
             food_score = 3
-        elif food_value > :
+        elif food_value > 7:
             food_score = 2
         else:
             food_score = 1
