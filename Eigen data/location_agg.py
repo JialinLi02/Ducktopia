@@ -42,4 +42,5 @@ def aggregate_location_data(df):
 
     return aggregated_df
 
-print(aggregate_location_data(data))
+agg_set = aggregate_location_data(data)
+agg_set.to_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Eigen data/dataset_aggregated.csv", index=False)
