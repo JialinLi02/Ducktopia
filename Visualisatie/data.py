@@ -3,7 +3,7 @@ import random
 import string
 
 # Create a CSV file to store the data
-filename = "grid_data.csv"
+filename = "Visualisatie/grid_data_3.csv"
 
 # Open the file in write mode
 with open(filename, mode='w', newline='') as file:

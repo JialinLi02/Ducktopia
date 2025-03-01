@@ -1,56 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Custom Image Map with Grid and Data</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Custom Image Map with Grid and Data</title>
 
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-	<script src="https://d3js.org/d3.v6.min.js"></script> <!-- Load d3 for CSV parsing -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script> <!-- Load d3 for CSV parsing -->
 
-	<style>
-		html, body {
-			height: 100%;
-			margin: 0;
-		}
-		#map {
-			width: 100%;
-			height: 500px;
-		}
-		#buttons {
-			position: absolute;
-			top: 10px;
-			left: 10px;
-			z-index: 1000;
-			background-color: white;
-			padding: 10px;
-		}
-	</style>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+    
+        #map-container {
+            width: 75vw;
+            height: 80vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        /* Center the map */
+        #map {
+            width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+    
+        /* Button container style */
+        #buttons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    
+        /* Button style */
+        #buttons button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+    
+        /* Button hover effect */
+        #buttons button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+    
+        /* Button focus effect */
+        #buttons button:focus {
+            outline: none;
+            box-shadow: 0 0 5px 2px rgba(0, 123, 255, 0.5);
+        }
+    
+        /* Hover info box style */
+        #hover-info {
+            position: absolute;
+            top: 100px;
+            right: 100px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            font-size: 16px;
+            font-weight: bold;
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+    
+        /* Hover info box title styling */
+        #hover-info b {
+            color: #333;
+            font-size: 14px;
+        }
+    
+    </style>
+    
 </head>
 <body>
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
 
-<div id="buttons">
-	<button onclick="loadCSV('grid_data_1.csv')">Heatmap 1</button>
-	<button onclick="loadCSV('grid_data_2.csv')">Heatmap 2</button>
-	<button onclick="loadCSV('grid_data_3.csv')">Heatmap 3</button>
-</div>
+    <div id="buttons">
+        <button onclick="loadCSV('')">Kaart</button>
+        <button onclick="loadCSV('../Eigen data/correct_weather_scores.csv')">Gunstig weer</button>
+        <button onclick="loadCSV('../Eigen data/food_scores.csv')">Food scores</button>
+        <button onclick="loadCSV('grid_data_3.csv')">Heatmap 3</button>
+    </div>
 
-<div id="map"></div>
+    <div id="hover-info"></div>
 
 <script>
 // Initialize the map
-var map = L.map('map').setView([37.8, -96], 10);  // Set a higher zoom level to start zoomed in
+var map = L.map('map').setView([37.8, -96], 10);  // Set zoom level
 
 // Your image URL
-var imageUrl = '../Ducktopia.png';  // Replace with your image URL
+var imageUrl = '../Grayscaled Ducktopia.png';  // Replace with your image URL
 
 // Image dimensions (in pixels)
-var imageWidth = 1000;  // Replace with your image's width in pixels
-var imageHeight = 500;  // Replace with your image's height in pixels
+var imageWidth = 1000;  
+var imageHeight = 500;  
 
-// Map bounds that you want the image to cover (set this based on the map's geographic coordinates)
-var mapBounds = [[37.7, -97], [37.9, -95]]; // Adjust the bounds as needed
+// Map bounds that you want the image to cover
+var mapBounds = [[37.7, -97], [37.9, -95]];
 
 // Calculate aspect ratio
 var aspectRatio = imageWidth / imageHeight;
@@ -73,7 +151,7 @@ var latDiff = imageBounds[1][0] - imageBounds[0][0];
 var lonDiff = imageBounds[1][1] - imageBounds[0][1];
 
 // Find the grid step to ensure square tiles
-var gridStep = Math.min(latDiff / gridHeight, lonDiff / gridWidth); // Ensure the tiles are square
+var gridStep = Math.min(latDiff / gridHeight, lonDiff / gridWidth); 
 
 // Function to load CSV data and display the grid
 function loadCSV(csvFile) {
@@ -86,50 +164,79 @@ function loadCSV(csvFile) {
     d3.csv(csvFile).then(function(data) {
         // Convert CSV data into a usable format
         var tileData = {};
+        var columnName = Object.keys(data[0]).find(key => key !== "Location"); // Automatically detect data column
+
         data.forEach(function(d) {
             var loc = d.Location;
-            var value = parseFloat(d.Value);
-            
+            var value = parseFloat(d[columnName]);
+
             // Convert location like "A1" to x, y coordinates
-            var x = parseInt(loc.slice(1)) - 1;  // Horizontal axis (1-50)
-            var y = loc.charCodeAt(0) - 'A'.charCodeAt(0);  // Vertical axis (A-Y)
-            
-            tileData[loc] = {
-                x: x,
-                y: y,
-                value: value
-            };
+            var x = parseInt(loc.slice(1)) - 1;  // Horizontal index (1-50)
+            var y = loc.charCodeAt(0) - 'A'.charCodeAt(0);  // Vertical index (A-Y)
+
+            tileData[loc] = { x: x, y: y, value: value };
         });
 
         // Create a grid of rectangles (tiles) over the image
         var grid = [];
         for (var i = 0; i < gridWidth; i++) {
             for (var j = 0; j < gridHeight; j++) {
-                var tileId = String.fromCharCode(65 + j) + (i + 1);  // Location like "A1", "B2", ...
-                var topLeft = [
+                let tileId = String.fromCharCode(65 + j) + (i + 1); // Generate tile ID (e.g., "A1")
+                let topLeft = [
                     imageBounds[0][0] + gridStep * j, 
                     imageBounds[0][1] + gridStep * i
                 ];
-                var bottomRight = [
+                let bottomRight = [
                     imageBounds[0][0] + gridStep * (j + 1), 
                     imageBounds[0][1] + gridStep * (i + 1)
                 ];
 
-                // Get the value for this tile from the data
-                var value = tileData[tileId] ? tileData[tileId].value : 0;  // Default to 0 if no data
+                let value = tileData[tileId] ? tileData[tileId].value : null;
+                let color = value !== null ? getColor(value) : "#cccccc"; // Default color if no value
 
-                // Get the color for the tile based on its value
-                var color = getColor(value);
+                let rect = L.rectangle([topLeft, bottomRight], {
+                    color: '',  // Initially no border
+                    weight: 2,  // Border weight
+                    fillColor: color,
+                    fillOpacity: 0.5
+                });
 
-                // Add a rectangle for each tile with the appropriate color
-                grid.push(
-                    L.rectangle([topLeft, bottomRight], {
-                        color: '',  // Tile border color
-                        weight: 1,
-                        fillColor: color,
-                        fillOpacity: 0.3
-                    })
-                );
+                // Mouseover event to show the hover box, darken the color, and add a border
+                if (value !== null) {
+                    rect.on('mouseover', (function(tileId, value) {
+                        return function() {
+                            // Show hover info
+                            document.getElementById('hover-info').innerHTML = 
+                                `<b>Tile:</b> ${tileId}<br>
+                                 <b>Data:</b> ${columnName}<br>
+                                 <b>Value:</b> ${value.toFixed(2)}`;
+                            document.getElementById('hover-info').style.display = 'block';
+
+                            // Darken the color and add a border on hover
+                            rect.setStyle({
+                                fillOpacity: 0.9,  // Increase opacity
+                                fillColor: darkenColor(color),  // Darken the color
+                                color: '#000000',  // Add a black border
+                                weight: 3  // Increase border thickness
+                            });
+                        };
+                    })(tileId, value));
+
+                    // Mouseout event to hide the hover box, reset color and remove border
+                    rect.on('mouseout', function() {
+                        document.getElementById('hover-info').style.display = 'none';
+
+                        // Reset opacity, color, and border of the tile
+                        rect.setStyle({
+                            fillOpacity: 0.5,
+                            fillColor: color,
+                            color: '',
+                            weight: 1
+                        });
+                    });
+                }
+
+                grid.push(rect);
             }
         }
 
@@ -138,19 +245,38 @@ function loadCSV(csvFile) {
     });
 }
 
-// Function to get color based on value
+// Function to darken the color (used on hover)
+function darkenColor(color) {
+    var hex = color.substring(1); // Remove the "#" from the color string
+    var r = parseInt(hex.substring(0, 2), 16); // Red
+    var g = parseInt(hex.substring(2, 4), 16); // Green
+    var b = parseInt(hex.substring(4, 6), 16); // Blue
+
+    // Reduce each color value to darken the color
+    r = Math.max(0, r - 30);
+    g = Math.max(0, g - 30);
+    b = Math.max(0, b - 30);
+
+    // Return the new darkened color as a hex string
+    return "#" + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0');
+}
+
+
+
+
+// Function to get color based on value (green-red gradient)
 function getColor(value) {
-    return value > 75 ? '#800026' :
-           value > 50 ? '#BD0026' :
-           value > 25 ? '#E31A1C' :
-           value > 10 ? '#FC4E2A' :
-           value > 5  ? '#FD8D3C' :
-           value > 1  ? '#FEB24C' :
-           '#FFEDA0'; // Default color for low values
+    return value > 9.5 ? '#B8E6AE' :  // Dark Green
+           value > 9.0 ? '#BAD98F' :  // Green
+           value > 8.5 ? '#C9D98F' :  // Lime Green
+           value > 8.0 ? '#D7D98F' :  // Gold
+           value > 7.0 ? '#D9C98F' :  // Orange
+           value > 5.0 ? '#D9B88F' :  // Orange-Red
+           '#d9a28f';  // Dark Red (Lowest scores)
 }
 
 // Load the default CSV on initial load
-loadCSV('grid_data_1.csv');
+loadCSV('../Eigen data/correct_weather_scores.csv');
 </script>
 
 </body>
