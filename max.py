@@ -112,5 +112,5 @@ combined_df = pd.DataFrame({
     'Foodscore': Foodscore
 })
 
-combined_df.to_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Eigen data/food_scores.csv", index=False)
+combined_df.to_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Final_scores/food_scores.csv", index=False)
 
