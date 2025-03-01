@@ -21,7 +21,7 @@
         }
     
         #map-container {
-            width: 75vw;
+            width: 60vw;
             height: 80vh;
             display: flex;
             justify-content: center;
@@ -39,7 +39,7 @@
         /* Button container style */
         #buttons_l {
             position: absolute;
-            top: 50px;
+            top: 100px;
             left: 20px;
             z-index: 1000;
             background-color: rgba(255, 255, 255, 0.8);
@@ -52,7 +52,7 @@
         }
         #buttons_r {
             position: absolute;
-            top: 50px;
+            top: 100px;
             right: 20px;
             z-index: 1000;
             background-color: rgba(255, 255, 255, 0.8);
@@ -78,7 +78,7 @@
     
         /* Button style */
         .buttons button {
-            background-color: #b29e39;
+            background-color: #3e705f;
             color: white;
             padding: 12px 20px;
             border: none;
@@ -88,12 +88,16 @@
             transition: all 0.3s ease;
         }
 
+        #buttons_l button {
+            background-color: #a17264;  /* Change this color to your preference */
+        }
+
         #lege_kaart {
-            background-color: #767b6f;
+            background-color: #89a1a1;
         }
 
         #leefbaarheid {
-            background-color: #577b24;
+            background-color: #237522;
         }
     
         /* Button hover effect */
@@ -112,8 +116,8 @@
         /* Hover info box style */
         #hover-info {
             position: absolute;
-            top: 100px;
-            right: 100px;
+            top: 50px;
+            /* right: 100px; */
             background: rgba(255, 255, 255, 0.9);
             padding: 15px;
             border-radius: 8px;
@@ -141,25 +145,25 @@
     </div>
 
     <div class="buttons" id="buttons_l">
-        <button onclick="loadCSV('../Final_scores/clouds.csv')">Bewolking</button>
         <button onclick="loadCSV('../Final_scores/Eenden_scores.csv')">Afwezigheid van gevaarlijke eenden</button>
-        <button onclick="loadCSV('../Final_scores/final_precipitation_scores.csv')">Neerslag score</button>
-        <button onclick="loadCSV('../Final_scores/final_temperature_scores.csv')">Temperatuur score</button>
-        <button onclick="loadCSV('../Final_scores/final_uv_index_scores.csv')">UV-index score</button>
+        <button onclick="loadCSV('../Final_scores/Seismische_scores.csv')">Seismische score</button>
+        <button onclick="loadCSV('../Final_scores/food_scores.csv')">Voedsel beschikbaarheid</button>
         <button onclick="loadCSV('../Final_scores/final_weather_scores.csv')">Weer score</button>
     </div>
     
     <div class="buttons" id="buttons_r">
-        <button onclick="loadCSV('../Final_scores/food_scores.csv')">Voedsel beschikbaarheid</button>
         <button onclick="loadCSV('../Final_scores/gespotte_eendjes.csv')">Aantal gevaarlijke eendjes</button>
+        <button onclick="loadCSV('../Final_scores/clouds.csv')">Bewolking</button>
         <button onclick="loadCSV('../Final_scores/giftig_gas.csv')">Giftigheid van lucht</button>
-        <button onclick="loadCSV('../Final_scores/Seismische_scores.csv')">Seismische score</button>
+        <button onclick="loadCSV('../Final_scores/final_precipitation_scores.csv')">Neerslag score</button>
+        <button onclick="loadCSV('../Final_scores/final_temperature_scores.csv')">Temperatuur score</button>
+        <button onclick="loadCSV('../Final_scores/final_uv_index_scores.csv')">UV-index score</button>
         <button onclick="loadCSV('../Final_scores/uitbarsting_scores.csv')">Vulkaanuitbarsting scores</button>
         <button onclick="loadCSV('../Final_scores/wind_scores.csv')">Windsnelheid (km/h)</button>
     </div>
     
     <div class="buttons" id="buttons_bottom">
-        <button id="lege_kaart" onclick="loadCSV('')">Kaart</button>
+        <button id="lege_kaart" onclick="loadCSV('')">Lege Kaart</button>
         <button id="leefbaarheid" onclick="loadCSV('../Final_scores/weighted_average_scores.csv')">Leefbaarheidsindex</button>
     </div>
     
