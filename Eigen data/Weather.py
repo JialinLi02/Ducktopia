@@ -19,7 +19,16 @@ koppen_geiger = ["Af", "Am", "Aw", "Cfb", "Cfa", "Csb", "Csc", "Dfb", "Dfc", "ET
 
 # Assign a random classification to each location
 location_koppen = {location: random.choice(koppen_geiger) for location in locations}
+grond_loc = {}
+for location in location_koppen:
+    # Terrein
+    terreinen = ["Bergen", "Heuvels", "Vlaktes", "Woestijnen", "Toendra","Moerassen","Savanne","Tropisch regenwoud","Steppes"]
+    terrein = random.choice(terreinen)
 
+    # Ondergrond
+    ondergronden = ["Zand","Klei","Leem","Silt","Kalksteen","Graniet","Basalt","Veen"]
+    ondergrond = random.choice(ondergronden)
+    grond_loc[location] = [terrein, ondergrond]
 # print(location_koppen)
 
 # Generate daily timestamps from start to end date
@@ -63,26 +72,27 @@ def generate_weather(koppen, day_of_year):
     wind_dir = np.random.uniform(0, 360)
 
     # Seismische activiteit
-    magnitude = np.random.lognormal(0, 0.8, 10000)[0]
+    # Genereer een log-normale magnitude en clip naar [1, 10]
+    magnitude = np.random.lognormal(0, 1.5, 10000)[0]
     magnitude = int(np.clip(magnitude, 1, 10))
-    mmi = np.random.lognormal(0, 0.8, 10000)[0]
-    mmi = int(np.clip(mmi, 1, 13))
+
+    # Maak mmi afhankelijk van magnitude + toegevoegde ruis
+    mmi_base = magnitude + np.random.normal(0, 1.5)  # Kleine variatie
+    mmi = int(np.clip(mmi_base, 1, 12))  # Clip binnen [1, 12]
 
     seismische_activiteit = (magnitude, mmi)
 
     # UV-index
-    uv_index = np.random.lognormal(0, 0.8, 10000)[0]
+    uv_index = np.random.lognormal(0.5, 1.5, 10000)[0]
     uv_index = int(np.clip(uv_index, 1, 13))
 
-    # Terrein
-    terreinen = ["Bergen", "Heuvels", "Vlaktes", "Woestijnen", "Toendra","Moerassen","Savanne","Tropisch regenwoud","Steppes"]
-    terrein = random.choice(terreinen)
+    # Vulkanische activiteit
+    uitbarsting_gemeten = random.choices([0, 1], weights=(80, 20))[0]
+    giftigheid_vrijgekomen_stoffen = uitbarsting_gemeten * 100 - wind_speed
 
-    # Ondergrond
-    ondergronden = ["Zand","Klei","Leem","Silt","Kalksteen","Graniet","Basalt","Veen"]
-    ondergrond = random.choice(ondergronden)
-    
-    return temp, pressure, wind_speed, wind_dir, humidity, cloud_cover, precipitation, seismische_activiteit, uv_index, terrein, ondergrond
+
+
+    return temp, pressure, wind_speed, wind_dir, humidity, cloud_cover, precipitation, seismische_activiteit, uv_index, uitbarsting_gemeten, giftigheid_vrijgekomen_stoffen
 
 # Generate the dataset
 data = []
@@ -91,14 +101,14 @@ for location in locations:
     koppen = location_koppen[location]
     for date in date_range:
         day_of_year = date.timetuple().tm_yday
-        temp, pressure, wind_speed, wind_dir, humidity, cloud_cover, precipitation, seismische_activiteit, uv_index, terrein, ondergrond = generate_weather(koppen, day_of_year)
-        data.append([int(date.timestamp()), location, koppen, temp, pressure, wind_speed, wind_dir, humidity, cloud_cover, precipitation, seismische_activiteit, uv_index, terrein, ondergrond])
+        temp, pressure, wind_speed, wind_dir, humidity, cloud_cover, precipitation, seismische_activiteit, uv_index, uitbarsting_gemeten, giftigheid_vrijgekomen_stoffen = generate_weather(koppen, day_of_year)
+        data.append([int(date.timestamp()), location, koppen, temp, pressure, wind_speed, wind_dir, humidity, cloud_cover, precipitation, seismische_activiteit, uv_index, grond_loc[location][0], grond_loc[location][1], uitbarsting_gemeten, giftigheid_vrijgekomen_stoffen])
 
 # Create a DataFrame
 columns = [
     "UNIXTimestamp", "Location", "LocationKoppenGeigerClassification",
     "AirTemperatureCelsius", "AirPressure_hPa", "WindSpeed_kmh",
-    "WindDirection_deg", "Humidity_percent", "CloudCoverage_percent", "Precipitation_mm", "Seismische Activiteit", "UV index", "Terrein", "Ondergrond"
+    "WindDirection_deg", "Humidity_percent", "CloudCoverage_percent", "Precipitation_mm", "Seismische Activiteit", "UV index", "Terrein", "Ondergrond", "Uitbarsting gemeten", "Giftigheid vrijgekomen stoffen"
 ]
 df = pd.DataFrame(data, columns=columns)
 
