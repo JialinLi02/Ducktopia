@@ -110,6 +110,7 @@ grouped_data['Seismic score'] = grouped_data.apply(lambda row: bepaal_seismische
 
 locations = data2["Location"]
 wind = data2["WindSpeed_kmh"]
+wind = 10- (wind/max(wind))*10
 uitbarstingen  = [1 if score > 0.25 else 0 for score in data2["Uitbarsting gemeten"]]
 seis = grouped_data['Seismic score']
 
