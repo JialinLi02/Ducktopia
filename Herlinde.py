@@ -124,8 +124,7 @@ grouped_data = data.groupby("Location").agg({
 eendjes_data = pd.read_csv("C:/Users/herli/Downloads/AE/Ducktopia/Final_scores/Eenden_scores.csv")
 
 def tel_eendjes_op(eendenrisico):
-    round(eendenrisico*3 + random.uniform(-5, 5))
-
+    return round(eendenrisico*3 + random.uniform(-5, 5))
 
 eendjes_data['Eendjes'] = eendjes_data.apply(lambda row: tel_eendjes_op(row['Duck score']), axis=1)
 
