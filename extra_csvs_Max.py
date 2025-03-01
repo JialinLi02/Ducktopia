@@ -120,12 +120,12 @@ combined_df = pd.DataFrame({
 
 combined_df.to_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Final_scores/wind_scores.csv", index=False)
 
-combined_df = pd.DataFrame({
-    'Location': locations,
-    'uitbarstingen': uitbarstingen
-})
+#combined_df = pd.DataFrame({
+   # 'Location': locations,
+    #'uitbarstingen': uitbarstingen
+#})
 
-combined_df.to_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Final_scores/uitbarsting_scores.csv", index=False)
+#combined_df.to_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Final_scores/uitbarsting_scores.csv", index=False)
 
 combined_df = pd.DataFrame({
     'Location': locations,
