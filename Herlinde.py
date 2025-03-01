@@ -3,7 +3,7 @@ import numpy as np
 import ast
 
 data = pd.read_csv("C:/Users/herli/Downloads/AE/Ducktopia/Eigen data/Quentin_dataset.csv")
-food_scores = pd.read_csv("C:/Users/herli/Downloads/AE/Ducktopia/Eigen data/Final_scores/food_scores.csv")
+food_scores = pd.read_csv("C:/Users/herli/Downloads/AE/Ducktopia/Final_scores/food_scores.csv")
 
 # Aggregate the dataset
 data["Seismische Activiteit"] = data["Seismische Activiteit"].apply(ast.literal_eval)
@@ -103,12 +103,12 @@ grouped_data['Seismic score'] = grouped_data.apply(lambda row: bepaal_seismische
 
 print(grouped_data)
 
-output_file = r"C:/Users/herli/Downloads/AE/Ducktopia/Eigen data/Eenden_scores.csv"
+output_file = r"C:/Users/herli/Downloads/AE/Ducktopia/Final_scores/Eenden_scores.csv"
 grouped_data[["Location", "Duck score"]].to_csv(output_file, index=False)
 
 print(f"Weather scores have been saved to {output_file}")
 
-output_file = r"C:/Users/herli/Downloads/AE/Ducktopia/Eigen data/Seismische_scores.csv"
+output_file = r"C:/Users/herli/Downloads/AE/Ducktopia/Final_scores/Seismische_scores.csv"
 grouped_data[["Location", "Seismic score"]].to_csv(output_file, index=False)
 
 print(f"Weather scores have been saved to {output_file}")
