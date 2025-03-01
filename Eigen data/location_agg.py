@@ -8,24 +8,13 @@ import pandas as pd
 import numpy as np
 
 def aggregate_location_data(df):
-    """
-    Aggregates data by location. For numerical columns, it calculates the mean.
-    For categorical columns, it takes the value from the first occurrence of each location.
-    For tuple columns, it calculates the mean of each element in the tuple.
-
-    Parameters:
-        df (pd.DataFrame): The input DataFrame with a 'Location' column.
-
-    Returns:
-        pd.DataFrame: A new DataFrame with one row per location.
-    """
     # Separate numerical, categorical, and tuple columns
     numerical_cols = df.select_dtypes(include=['number']).columns
     categorical_cols = df.select_dtypes(exclude=['number']).columns
     tuple_cols = [col for col in df.columns if isinstance(df[col].iloc[0], tuple)]
 
-    # Group by 'Location'
-    grouped = df.groupby('Location')
+    # Group by 'Location' without sorting
+    grouped = df.groupby('Location', sort=False)
 
     # Aggregate numerical columns
     aggregated_df = grouped[numerical_cols].mean().reset_index()
@@ -43,4 +32,5 @@ def aggregate_location_data(df):
     return aggregated_df
 
 agg_set = aggregate_location_data(data)
+print(agg_set)
 agg_set.to_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Eigen data/dataset_aggregated.csv", index=False)

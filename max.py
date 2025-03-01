@@ -3,37 +3,12 @@ import numpy as np
 from collections import Counter
 
 
-data = pd.read_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Eigen data/dataset.csv")
+data_agg = pd.read_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Eigen data/dataset_aggregated.csv")
 plantdata = pd.read_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Data/dataset_edible_plants.csv")
-print(data)
 
 
-def aggregate_location_data(df):
-    
-    # Separate numerical, categorical, and tuple columns
-    numerical_cols = df.select_dtypes(include=['number']).columns
-    categorical_cols = df.select_dtypes(exclude=['number']).columns
-    tuple_cols = [col for col in df.columns if isinstance(df[col].iloc[0], tuple)]
 
-    # Group by 'Location'
-    grouped = df.groupby('Location')
 
-    # Aggregate numerical columns
-    aggregated_df = grouped[numerical_cols].mean().reset_index()
-
-    # Aggregate categorical columns
-    for col in categorical_cols:
-        if col not in tuple_cols:  # Skip tuple columns
-            aggregated_df[col] = grouped[col].first().reset_index(drop=True)
-
-    # Aggregate tuple columns
-    for col in tuple_cols:
-        # Calculate the mean of each element in the tuple
-        aggregated_df[col] = grouped[col].apply(lambda x: tuple(np.mean(list(x), axis=0)))
-
-    return aggregated_df
-
-data_agg = aggregate_location_data(data)
 
 
 ## Water availability
@@ -49,10 +24,10 @@ def water_availability_cat(water_availability, th_moderate, th_high):
     new_list = []
     for i in water_availability: 
         if i > th_high: 
-            new_list.append("high")
+            new_list.append("High")
         elif i > th_moderate:
-            new_list.append("moderate")
-        else: new_list.append("low")
+            new_list.append("Moderate")
+        else: new_list.append("Low")
     return new_list
 
 
@@ -78,8 +53,34 @@ def map_koppen_to_climate(koppen_values):
     """Maps a list of Köppen-Geiger values to their climate type."""
     return [koppen_to_climate.get(value, "Unknown") for value in koppen_values]
 
-def plantsoorten(climate, WA):
-    
+def food_score(x,y,z):
+    return x * (y +  z)
+
+def plantscores(climate, WA, plant_data):
+    plant_climates = plant_data["Growth Climate"]
+    plant_water = plant_data["Watering Needs"]
+    plant_scores = []
+    climate = map_koppen_to_climate(climate)
+
+    for i in range(0,len(climate)):
+        size = 0
+        prot = 0
+        kcal = 0
+        counter = 0
+        clim = climate[i]
+        water = WA[i]
+        for j in range(0,len(plant_climates)):
+            if plant_climates[j] == clim:
+                if plant_water[j] == water:
+                    size += plant_data["Weight when Full Grown (kg)"][j]
+                    prot += plant_data["Proteins per 100g (g)"][j]
+                    kcal += plant_data["Kcal per 100g"][j]
+                    counter += 1
+        if counter > 0: plant_scores.append(food_score(size/counter, prot/counter, kcal/counter))
+        else: plant_scores.append(0)
+    plant_scores = (plant_scores/max(plant_scores)) * 10
+    return plant_scores
+            
 
 def calculate_plantscores(plant_data, weather_data):
     water_availability_set = []
@@ -95,14 +96,21 @@ def calculate_plantscores(plant_data, weather_data):
     WA_categories = list(WA_categories)
     weather_data['WA'] = WA_categories
 
-    
-    return weather_data
+    plant_scores = plantscores(weather_data["LocationKoppenGeigerClassification"], weather_data['WA'], plant_data) 
+    print("Unique plant scores:", set(plant_scores))
+    return plant_scores
 
 
+Foodscore = calculate_plantscores(plantdata,data_agg )
+Location = data_agg["Location"]
 
-dummydata = []
-test = calculate_plantscores(plantdata,data_agg )
-value_counts = Counter(test["WA"])
-print(value_counts)
+print(Foodscore)
 
+
+combined_df = pd.DataFrame({
+    'Location': Location,
+    'Foodscore': Foodscore
+})
+
+combined_df.to_csv("/Users/maxdesmedt/ducktopia_ae/Ducktopia/Eigen data/food_scores.csv", index=False)
 
