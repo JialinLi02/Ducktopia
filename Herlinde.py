@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import ast
 
-data = pd.read_csv("C:/Users/herli/Downloads/AE/Ducktopia/Eigen data/dataset.csv")
-food_scores = pd.read_csv("C:/Users/herli/Downloads/AE/Ducktopia/Eigen data/food_scores.csv")
+data = pd.read_csv("C:/Users/herli/Downloads/AE/Ducktopia/Eigen data/Quentin_dataset.csv")
+food_scores = pd.read_csv("C:/Users/herli/Downloads/AE/Ducktopia/Eigen data/Final_scores/food_scores.csv")
 
 # Aggregate the dataset
 data["Seismische Activiteit"] = data["Seismische Activiteit"].apply(ast.literal_eval)
